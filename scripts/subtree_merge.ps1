@@ -41,7 +41,6 @@ for([int]$i = 0; $i -lt $num_repos_to_merge; $i += 1)
     for([int]$j = 0; $j -lt $curr_rtbs.Length; $j += 1) {
         $curr_rtbs[$j] = $curr_rtbs[$j].Trim()
     }
-    #[string[]]$curr_repo_rtbs = $curr_rtbs.Where($_.IndexOf($curr_repo_origin_name) -eq 0)
     [string[]]$curr_repo_rtbs = @()
     for([int]$j = 1; $j -lt $curr_rtbs.length; $j += 1) {
         if($curr_rtbs[$j].IndexOf($curr_repo_origin_name) -eq 0)
@@ -88,10 +87,38 @@ for([int]$i = 0; $i -lt $num_repos_to_merge; $i += 1)
     else {
         if($keep_branch_subtrees -eq "yes")
         {
-
+            for([int]$j = 0; $j -lt $curr_repo_rtbs.Length; $j += 1)
+            {
+                [string]$curr_prefix = ""
+                if($j -eq $curr_main_branch_index)
+                {
+                    $curr_prefix = $curr_repo_name
+                }
+                else {
+                    $curr_prefix = $curr_repo_name + "_" + $curr_repo_branch_names[$j]
+                }
+                git subtree add -P $curr_prefix $curr_repo_rtbs[$j]
+            }
         }
         else {
-            
+            for([int]$j = 0; $j -lt $curr_repo_rtbs.Length; $j += 1)
+            {
+                [string]$curr_prefix = ""
+                if($j -eq $curr_main_branch_index)
+                {
+                    $curr_prefix = $curr_repo_name
+                }
+                else {
+                    $curr_prefix = $curr_repo_name + "_" + $curr_repo_branch_names[$j]
+                }
+                git subtree add -P $curr_prefix $curr_repo_rtbs[$j]
+                if($j -ne $curr_main_branch_index)
+                {
+                    rm -r $curr_prefix
+                    git add .
+                    git commit -m "removed branch subtree folder $curr_prefix"
+                }
+            }
         } 
     }
 }
